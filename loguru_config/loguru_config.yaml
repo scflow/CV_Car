@@ -1,0 +1,25 @@
+version: 1
+disable_existing_loggers: false
+loggers:
+  default:
+    level: DEBUG
+    handlers: ["console", "file"]
+handlers:
+  console:
+    class: "loguru._logger.Logger"
+    formatter: simple
+    level: DEBUG
+    sink: sys.stdout
+  file:
+    class: "loguru._logger.Logger"
+    # formatter: "{time:YYYY-MM-DD at HH:mm:ss} | {file: <15} | {level} | {message}"
+    level: DEBUG
+    sink: "loguru_log/{time:YYYY-MM-DD_HH-mm}.log"
+    rotation: "1 week"
+    retention: "10 days"
+    enqueue: true
+    compression: "zip"
+
+formatters:
+  simple:
+    format: "%(asctime)s | %(levelname)-7s | %(message)s"

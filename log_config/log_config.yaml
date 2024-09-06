@@ -1,0 +1,51 @@
+version: 1
+
+formatters:
+  simple:
+    format: "%(asctime)s | %(levelname)-7s | %(message)s"
+  complex:
+    format: "%(asctime)s | %(levelname)-8s | %(filename)s | %(message)s"
+    datefmt: '%Y-%m-%d %H:%M:%S'
+  color_simple:
+    (): 'colorlog.ColoredFormatter'
+    format: "%(log_color)s%(levelname)-8s| %(message)s"
+    reset: True
+    log_colors:
+      DEBUG: 'light_blue'
+      INFO: 'light_cyan'
+      WARNING: 'light_yellow'
+      ERROR: 'light_red'
+      CRITICAL: 'light_purple'
+  color_complex:
+    (): 'colorlog.ColoredFormatter'
+    format: "%(log_color)s%(levelname)-8s| %(message)s"
+    reset: True
+    log_colors:
+      DEBUG: 'light_blue'
+      INFO: 'light_white'
+      WARNING: 'light_yellow'
+      ERROR: 'light_red'
+      CRITICAL: 'light_purple'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: color_simple
+  file:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: INFO
+    formatter: complex
+    when: h
+    interval: 1
+    filename: ./log/log/log.
+    backupCount: 20
+
+loggers:
+  application:
+    level: DEBUG
+    handlers: [console, file]
+    propagate: False
+
+root:
+  level: INFO
+  handlers: [console, file]
