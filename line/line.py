@@ -186,18 +186,18 @@ def show_lane(color_img, mode=0):
             return color_img
         else:
             right_line, left_line = lines
+            LeftLine.update(left_line)
+            RightLine.update(right_line)
+            if LeftLine.upper_x is not None and RightLine.upper_x is not None and LeftLine.upper_x < RightLine.upper_x:
+                MidLine.update(np.array([[(LeftLine.upper_x + RightLine.upper_x) / 2, MidLine.upper_y],
+                                         [(LeftLine.lower_x + RightLine.lower_x) / 2, MidLine.lower_y]]))
+            else:
+                MidLine.lose_count += 1
+                MidLine.lose_num += 1
             if mode == 2:
-                LeftLine.update(left_line)
-                RightLine.update(right_line)
-                if LeftLine.upper_x is not None and RightLine.upper_x is not None and LeftLine.upper_x < RightLine.upper_x:
-                    MidLine.update(np.array([[(LeftLine.upper_x + RightLine.upper_x) / 2, MidLine.upper_y],
-                                             [(LeftLine.lower_x + RightLine.lower_x) / 2, MidLine.lower_y]]))
-                else:
-                    MidLine.lose_count += 1
-                    MidLine.lose_num += 1
-                    if MidLine.lose_num == 5:
-                        MidLine.upper_x = mask_gray_img.shape[1] // 2
-                        MidLine.lose_num = 0
+                if MidLine.lose_num == 5:
+                    MidLine.upper_x = mask_gray_img.shape[1] // 2
+                    MidLine.lose_num = 0
                 if LeftLine.upper_x is not None:
                     cv2.line(color_img, [int(LeftLine.upper_x), MidLine.upper_y],
                              [int(LeftLine.lower_x), MidLine.lower_y],
@@ -269,7 +269,7 @@ class Line:
             upper_x_tmp = x_1 - (y_1 - self.upper_y) / slope_tmp
             lower_x_tmp = x_1 - (y_1 - self.lower_y) / slope_tmp
             cos_tmp = math.sqrt(1 / (slope_tmp * slope_tmp + 1))
-            if self.upper_x is not None:
+            if self.upper_x is not None and self.slope is not None:
                 if abs(upper_x_tmp - self.upper_x) < 0.25 * self.width and abs(cos_tmp - self.cos) < 0.4:
                     self.upper_x = 0.75 * upper_x_tmp + 0.25 * self.upper_x
                     self.lower_x = 0.75 * lower_x_tmp + 0.25 * self.lower_x
