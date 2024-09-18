@@ -53,12 +53,11 @@ def find(img, mode, flag=0):
     # 变道识别
     elif mode == 2:
         if anti_shake == 0:
-            roi_img = img[320:480, 80:560]
+            roi_img = img[240:480, 240:400]
             if A4_find(roi_img):
                 anti_shake = 1
         elif anti_shake == 1:
-            roi_img = img[320:480, 80:560]
-            cv2.imshow('roi_img', roi_img)
+            roi_img = img[320:480, 200:440]
             change = line_change(roi_img)
             if change == 1:
                 print(f'Left {blue_left_matcher.goodnum} {blue_right_matcher.goodnum}')
@@ -151,10 +150,10 @@ def angle_calc(angle, mode, flag):
 
 
 if __name__ == '__main__':
-    cap = cv2.VideoCapture('Video/pgv7.mp4')
+    cap = cv2.VideoCapture('Video/output_20240917_153313.mp4')
     fps = FPS().start()
     start_time, frame_count, anti_shake, width, height = init()
-    find_mode = 1
+    find_mode = 2
     find_flag = 0
     angle = 0
     try:

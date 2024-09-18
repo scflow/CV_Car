@@ -33,20 +33,20 @@ yellow_line_detect = Detect(yellow_cone, 'yellow_line_detect', 300, 20)
 blue_A4 = Block('blue_A4', 15, 15,
                 np.array([124, 255, 255]), np.array([100, 43, 46]))
 red_A4 = Block('red_A4', 15, 15,
-               np.array([10, 255, 255]), np.array([0, 100, 100]))
+               np.array([179, 255, 255]), np.array([170, 50, 50]))
 # Detect A4纸
-blue_A4_detect = Detect(blue_A4, 'blue_A4_detect', 180, 20)
-red_A4_detect = Detect(red_A4, 'red_A4_detect', 180, 20)
+blue_A4_detect = Detect(blue_A4, 'blue_A4_detect', 120, 20)
+red_A4_detect = Detect(red_A4, 'red_A4_detect', 120, 20)
 
 # SIFT 左转
 blue_left = Sift('blue_left')
-blue_left.detect_and_compute(gray_Blue_Left)
+blue_left.detect_and_compute(gray_Red_Left)
 # Matcher 左转
 blue_left_matcher = Matcher('blue_left_matcher')
 
 # SIFT 右转
 blue_right = Sift('blue_right')
-blue_right.detect_and_compute(gray_Blue_Right)
+blue_right.detect_and_compute(gray_Red_Right)
 # Matcher 右转
 blue_right_matcher = Matcher('blue_right_matcher')
 
@@ -71,9 +71,8 @@ def ZebraCross_find(img):
     return False
 
 
-def A4_find(img, A4=blue_A4, A4_detect=blue_A4_detect):
-    roi_resize = cv2.resize(img, (img.shape[0] // 2, img.shape[1] // 2))
-    hsv_img = cv2.cvtColor(roi_resize, cv2.COLOR_BGR2HSV)
+def A4_find(img, A4=red_A4, A4_detect=red_A4_detect):
+    hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv_img, A4.color_lower, A4.color_upper)
     kernel = np.ones((40, 40), np.uint8)
     dilated_image = cv2.dilate(mask, kernel, iterations=1)
