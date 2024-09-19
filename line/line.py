@@ -7,8 +7,7 @@ def fitler_process(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     equalized = cv2.equalizeHist(gray)
     gaussian = cv2.GaussianBlur(equalized, (5, 5), 3)
-    median = cv2.medianBlur(gaussian, 5)
-    adaptive_thresh = cv2.adaptiveThreshold(median, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+    adaptive_thresh = cv2.adaptiveThreshold(gaussian, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                             cv2.THRESH_BINARY, 9, 0)
     kernel = np.ones((3, 3), np.uint8)
     dilated_image = cv2.erode(adaptive_thresh, kernel, iterations=1)
@@ -20,7 +19,6 @@ def contour_extraction(img):
     # 筛选轮廓
     lane_lines = []
     min_line_length = 300  # 跑道线最小长度，根据实际情况调整
-    contour_areas = []  # 存储轮廓及其面积
     slope_threshold = 0.2
     for contour in contours:
         # 计算轮廓长度
@@ -42,27 +40,6 @@ def contour_extraction(img):
             # 检查轮廓的斜率，以区分跑道线和噪点
             if abs(slope) > slope_threshold:
                 lane_lines.append(contour)
-
-    # # 初步筛选满足长度和斜率条件的轮廓
-    # filtered_contours = []
-    # for contour in contours:
-    #     perimeter = cv2.arcLength(contour, True)
-    #     if perimeter > min_line_length:
-    #         x, y, w, h = cv2.boundingRect(contour)
-    #         if w == 0 or h == 0:
-    #             continue  # 忽略太小或太大的轮廓
-    #         slope = (y - (y + h)) / (x - (x + w))  # 计算斜率
-    #         if abs(slope) > slope_threshold:
-    #             filtered_contours.append(contour)
-    #
-    # # 计算面积并保留最大的两个轮廓
-    # if len(filtered_contours) > 0:
-    #     contour_areas = [(contour, cv2.contourArea(contour)) for contour in filtered_contours]
-    #     contour_areas.sort(key=lambda x: x[1], reverse=True)  # 按面积降序排序
-    #     top_contours = contour_areas[:2]  # 保留面积最大的两个轮廓
-    #     lane_lines = [contour for contour, area in top_contours]
-    # else:
-    #     lane_lines = []
 
     # 在空白图像上绘制轮廓
     line_image = np.zeros_like(img)
@@ -186,18 +163,18 @@ def show_lane(color_img, mode=0):
             return color_img
         else:
             right_line, left_line = lines
+            LeftLine.update(left_line)
+            RightLine.update(right_line)
+            if LeftLine.upper_x is not None and RightLine.upper_x is not None and LeftLine.upper_x < RightLine.upper_x:
+                MidLine.update(np.array([[(LeftLine.upper_x + RightLine.upper_x) / 2, MidLine.upper_y],
+                                         [(LeftLine.lower_x + RightLine.lower_x) / 2, MidLine.lower_y]]))
+            else:
+                MidLine.lose_count += 1
+                MidLine.lose_num += 1
             if mode == 2:
-                LeftLine.update(left_line)
-                RightLine.update(right_line)
-                if LeftLine.upper_x is not None and RightLine.upper_x is not None and LeftLine.upper_x < RightLine.upper_x:
-                    MidLine.update(np.array([[(LeftLine.upper_x + RightLine.upper_x) / 2, MidLine.upper_y],
-                                             [(LeftLine.lower_x + RightLine.lower_x) / 2, MidLine.lower_y]]))
-                else:
-                    MidLine.lose_count += 1
-                    MidLine.lose_num += 1
-                    if MidLine.lose_num == 5:
-                        MidLine.upper_x = mask_gray_img.shape[1] // 2
-                        MidLine.lose_num = 0
+                if MidLine.lose_num == 5:
+                    MidLine.upper_x = mask_gray_img.shape[1] // 2
+                    MidLine.lose_num = 0
                 if LeftLine.upper_x is not None:
                     cv2.line(color_img, [int(LeftLine.upper_x), MidLine.upper_y],
                              [int(LeftLine.lower_x), MidLine.lower_y],
@@ -269,7 +246,7 @@ class Line:
             upper_x_tmp = x_1 - (y_1 - self.upper_y) / slope_tmp
             lower_x_tmp = x_1 - (y_1 - self.lower_y) / slope_tmp
             cos_tmp = math.sqrt(1 / (slope_tmp * slope_tmp + 1))
-            if self.upper_x is not None:
+            if self.upper_x is not None and self.slope is not None:
                 if abs(upper_x_tmp - self.upper_x) < 0.25 * self.width and abs(cos_tmp - self.cos) < 0.4:
                     self.upper_x = 0.75 * upper_x_tmp + 0.25 * self.upper_x
                     self.lower_x = 0.75 * lower_x_tmp + 0.25 * self.lower_x

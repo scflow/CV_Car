@@ -82,7 +82,18 @@ Blue_Left = cv2.imread('Picture/Blue_Left.jpg')
 gray_Blue_Left = cv2.cvtColor(Blue_Left, cv2.COLOR_BGR2GRAY)
 Blue_Right = cv2.imread('Picture/Blue_Right.jpg')
 gray_Blue_Right = cv2.cvtColor(Blue_Right, cv2.COLOR_BGR2GRAY)
+
+Red_Left = cv2.imread('Picture/Red_Left.jpg')
+gray_Red_Left = cv2.cvtColor(Red_Left, cv2.COLOR_BGR2GRAY)
+Red_Right = cv2.imread('Picture/Red_Right.jpg')
+gray_Red_Right = cv2.cvtColor(Red_Right, cv2.COLOR_BGR2GRAY)
+
 Blue_A = cv2.imread('Picture/Blue_A.jpg')
 gray_Blue_A = cv2.cvtColor(Blue_A, cv2.COLOR_BGR2GRAY)
 Blue_B = cv2.imread('Picture/Blue_B.jpg')
 gray_Blue_B = cv2.cvtColor(Blue_B, cv2.COLOR_BGR2GRAY)
+
+Red_A = cv2.imread('Picture/Red_A.jpg')
+gray_Red_A = cv2.cvtColor(Red_A, cv2.COLOR_BGR2GRAY)
+Red_B = cv2.imread('Picture/Red_B.jpg')
+gray_Red_B = cv2.cvtColor(Red_B, cv2.COLOR_BGR2GRAY)

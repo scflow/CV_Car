@@ -4,7 +4,7 @@ from detect import *
 from line.line import *
 from loguru_config.config import *
 from playsound import playsound
-
+from undistort import undistort
 
 def init():
     """
@@ -17,6 +17,8 @@ def init():
     LeftLine.set_img(cap_height // lane_resize, cap_width // lane_resize)
     RightLine.set_img(cap_height // lane_resize, cap_width // lane_resize)
     MidLine.set_img(cap_height // lane_resize, cap_width // lane_resize)
+    MidLine.upper_x = 160
+    MidLine.lower_x = 160
     if not cap.isOpened():
         logger.error('Cannot open video file')
         exit()
@@ -29,7 +31,6 @@ def lane(img):
     """
     resize_img = cv2.resize(img, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
     lane_img = show_lane(resize_img, 2)
-    cv2.imshow('lane_img', lane_img)
     return lane_img
 
 
@@ -51,12 +52,11 @@ def find(img, mode, flag=0):
     # 变道识别
     elif mode == 2:
         if anti_shake == 0:
-            roi_img = img[150:600, 200:700]
+            roi_img = img[240:480, 240:400]
             if A4_find(roi_img):
                 anti_shake = 1
         elif anti_shake == 1:
-            roi_img = img[400:600, 450:700]
-            cv2.imshow('roi_img', roi_img)
+            roi_img = img[320:480, 200:440]
             change = line_change(roi_img)
             if change == 1:
                 print(f'Left {blue_left_matcher.goodnum} {blue_right_matcher.goodnum}')
@@ -87,7 +87,7 @@ def find(img, mode, flag=0):
     # A、B停车
     elif mode == 4:
         if anti_shake == 0:
-            roi_img = img[150:600, 200:700]
+            roi_img = img[320:480, 80:560]
             if A4_find(roi_img):
                 anti_shake = 1
         elif anti_shake == 1:
@@ -149,10 +149,10 @@ def angle_calc(angle, mode, flag):
 
 
 if __name__ == '__main__':
-    cap = cv2.VideoCapture('Video/pgv10.mp4')
+    cap = cv2.VideoCapture('Video/output_20240917_153313.mp4')
     fps = FPS().start()
     start_time, frame_count, anti_shake, width, height = init()
-    find_mode = 1
+    find_mode = 2
     find_flag = 0
     angle = 0
     try:
@@ -161,6 +161,9 @@ if __name__ == '__main__':
             if not ret:
                 break
             frame_count += 1
+            if not width == 640:
+                frame = cv2.resize(frame, (640, 480))
+            resize_frame = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
             lane(frame)
             _, find_mode, find_flag = find(frame, find_mode)
             angle = angle_calc(angle, find_mode, find_flag)
