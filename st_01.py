@@ -45,7 +45,7 @@ def find(img, mode, flag=0):
     # 斑马新检测
     if mode == 1:
         if ZebraCross_find(img):
-            playsound('Audio/test.mp3')
+            playsound('Audio/doorbell.mp3')
             mode += 1
 
     # 变道识别
