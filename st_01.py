@@ -4,7 +4,7 @@ from detect import *
 from line.line import *
 from loguru_config.config import *
 from playsound import playsound
-
+from undistort import undistort
 
 def init():
     """
@@ -31,7 +31,6 @@ def lane(img):
     """
     resize_img = cv2.resize(img, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
     lane_img = show_lane(resize_img, 2)
-    cv2.imshow('lane_img', lane_img)
     return lane_img
 
 
