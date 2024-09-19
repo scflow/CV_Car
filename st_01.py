@@ -73,7 +73,9 @@ def find(img, mode, flag=0):
     elif mode == 3:
         if yellow_cone_detect.sum < 3:
             if anti_shake == 0:
-                cone_bool = cone_detect(img, yellow_cone, yellow_cone_detect)
+                roi_img = img[240:480, 200:440]
+                cv2.imshow('cone_roi', roi_img)
+                cone_bool = cone_detect(roi_img, yellow_cone, yellow_cone_detect)
                 if cone_bool:
                     logger.info(f'{yellow_cone_detect.sum} Cone Has Found')
                     flag = yellow_cone_detect.sum
@@ -149,10 +151,10 @@ def angle_calc(angle, mode, flag):
 
 
 if __name__ == '__main__':
-    cap = cv2.VideoCapture('Video/output_20240917_153313.mp4')
+    cap = cv2.VideoCapture('Video/output_20240919_112114.mp4')
     fps = FPS().start()
     start_time, frame_count, anti_shake, width, height = init()
-    find_mode = 2
+    find_mode = 3
     find_flag = 0
     angle = 0
     try:
@@ -163,16 +165,15 @@ if __name__ == '__main__':
             frame_count += 1
             if not width == 640:
                 frame = cv2.resize(frame, (640, 480))
-            resize_frame = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
-            lane(frame)
+            # lane(frame)
             _, find_mode, find_flag = find(frame, find_mode)
-            angle = angle_calc(angle, find_mode, find_flag)
-            print(f'\rDrop Rate: {MidLine.lose_count / frame_count * 100:.2f}%  '
-                  f'error_num: {MidLine.error_num} {MidLine.upper_x - width // 4} '
-                  f'angle: {angle}', end=' ')
+            # angle = angle_calc(angle, find_mode, find_flag)
+            # print(f'\rDrop Rate: {MidLine.lose_count / frame_count * 100:.2f}%  '
+            #       f'error_num: {MidLine.error_num} {MidLine.upper_x - width // 4} '
+            #       f'angle: {angle}', end=' ')
             if find_mode == 5:
                 break
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if cv2.waitKey(50) & 0xFF == ord('q'):
                 break
             fps.update()
     except KeyboardInterrupt:
