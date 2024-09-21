@@ -1,6 +1,7 @@
 import pigpio
 import time
 import os
+import playsound
 
 
 class Motor:
@@ -69,3 +70,53 @@ gimbal_x.set_angle(90)
 gimbal_y = Servo('gimbal_y', 23)
 gimbal_y.set_angle(90)
 time.sleep(2)
+playsound.playsound('../Audio/test.mp3')
+
+
+def left_avoid():
+    servo.set_angle(47)
+    time.sleep(0.8)
+    servo.set_angle(90)
+    time.sleep(1)
+    servo.set_angle(47)
+    time.sleep(1)
+
+def right_avoid():
+    servo.set_angle(47)
+    time.sleep(0.8)
+    servo.set_angle(90)
+    time.sleep(1)
+    servo.set_angle(47)
+    time.sleep(1)
+
+def left_line_change():
+    servo.set_angle(47)
+    time.sleep(0.8)
+    servo.set_angle(90)
+    time.sleep(1)
+    servo.set_angle(47)
+    time.sleep(1)
+
+def right_line_change():
+    servo.set_angle(47)
+    time.sleep(0.8)
+    servo.set_angle(90)
+    time.sleep(1)
+    servo.set_angle(47)
+    time.sleep(1)
+
+def A_stop():
+    servo.set_angle(47)
+    time.sleep(0.8)
+    servo.set_angle(90)
+    time.sleep(1)
+    servo.set_angle(47)
+    time.sleep(1)
+
+def B_stop():
+    servo.set_angle(47)
+    time.sleep(0.8)
+    servo.set_angle(90)
+    time.sleep(1)
+    servo.set_angle(47)
+    time.sleep(1)

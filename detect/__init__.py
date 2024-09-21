@@ -15,7 +15,7 @@ from .feature import *
 yellow_cone = Block('yellow_cone', 10, 10,
                     np.array([30, 255, 255]), np.array([20, 100, 100]))
 blue_cone = Block('blue_cone', 10, 10,
-                  np.array([128, 255, 255]), np.array([(90, 0, 0)]))
+                  np.array([128, 255, 255]), np.array([(100, 43, 46)]))
 red_cone = Block('red_cone', 10, 10,
                  np.array([10, 255, 255]), np.array([0, 100, 100]))
 # Detect 锥桶
