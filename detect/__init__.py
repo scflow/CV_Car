@@ -15,13 +15,13 @@ from .feature import *
 yellow_cone = Block('yellow_cone', 10, 10,
                     np.array([30, 255, 255]), np.array([20, 100, 100]))
 blue_cone = Block('blue_cone', 10, 10,
-                  np.array([124, 255, 255]), np.array([100, 43, 46]))
+                  np.array([128, 255, 255]), np.array([(100, 43, 46)]))
 red_cone = Block('red_cone', 10, 10,
                  np.array([10, 255, 255]), np.array([0, 100, 100]))
 # Detect 锥桶
-yellow_cone_detect = Detect(yellow_cone, 'yellow_cone_detect', 180, 20)
-blue_cone_detect = Detect(blue_cone, 'blue_cone_detect', 180, 20)
-red_cone_detect = Detect(red_cone, 'red_cone_detect', 180, 20)
+yellow_cone_detect = Detect(yellow_cone, 'yellow_cone_detect', 120, 20)
+blue_cone_detect = Detect(blue_cone, 'blue_cone_detect', 120, 20)
+red_cone_detect = Detect(red_cone, 'red_cone_detect', 120, 20)
 
 # Block 黄线
 yellow_line = Block('yellow_line', 10, 50,
@@ -68,7 +68,19 @@ Sift_img = Sift('Sift_img')
 
 # 检测函数以及实现
 def ZebraCross_find(img):
-    return False
+    # 检测白色范围
+    lower_color = np.array([75, 0, 99])  # 颜色下限
+    upper_color = np.array([179, 62, 255])  # 颜色上限
+    hsv_image = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  # type: ignore
+    mask = cv2.inRange(hsv_image, lower_color, upper_color)
+    total_pixels = np.sum(mask == 255)  # 总像素数
+    color_percentage = (total_pixels / (hsv_image.shape[0] * hsv_image.shape[1]))
+    area_threshold = 0.3
+    # 判断面积是否大于阈值
+    if color_percentage > area_threshold:
+        return True
+    else:
+        return False
 
 
 def A4_find(img, A4=red_A4, A4_detect=red_A4_detect):
@@ -95,11 +107,13 @@ def line_change(img):
         return 0
 
 
-def cone_detect(img, Cone, Cone_Detect):
+def cone_detect(img, Cone=blue_cone, Cone_Detect=blue_cone_detect):
     hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv_img, Cone.color_lower, Cone.color_upper)
+    cv2.imshow('mask', mask)
     kernel = np.ones((25, 25), np.uint8)
     dilated_image = cv2.dilate(mask, kernel, iterations=1)
+    cv2.imshow('cone_dilated', dilated_image)
     contours, _ = cv2.findContours(dilated_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     return Cone_Detect.find_block(contours, return_mode=2)
 

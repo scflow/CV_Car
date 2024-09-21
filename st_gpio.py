@@ -5,6 +5,8 @@ from line.line import *
 from loguru_config.config import *
 from playsound import playsound
 from undistort import undistort
+import control
+
 
 def init():
     """
@@ -46,7 +48,7 @@ def find(img, mode, flag=0):
     # 斑马新检测
     if mode == 1:
         if ZebraCross_find(img):
-            playsound('Audio/doorbell.mp3')
+            playsound('Audio/test.mp3')
             mode += 1
 
     # 变道识别
@@ -63,23 +65,29 @@ def find(img, mode, flag=0):
                 anti_shake = 0
                 mode += 1
                 flag = 1
+                control.left_line_change()
             elif change == 2:
                 print(f'Right {blue_left_matcher.goodnum} {blue_right_matcher.goodnum}')
                 anti_shake = 0
                 mode += 1
                 flag = 2
+                control.right_line_change()
 
     # 锥桶检测
     elif mode == 3:
-        if yellow_cone_detect.sum < 3:
+        if blue_cone_detect.sum < 3:
             if anti_shake == 0:
                 roi_img = img[240:480, 200:440]
                 cv2.imshow('cone_roi', roi_img)
-                cone_bool = cone_detect(roi_img, yellow_cone, yellow_cone_detect)
+                cone_bool = cone_detect(roi_img, blue_cone, blue_cone_detect)
                 if cone_bool:
-                    logger.info(f'{yellow_cone_detect.sum} Cone Has Found')
-                    flag = yellow_cone_detect.sum
+                    logger.info(f'{blue_cone_detect.sum} Cone Has Found')
+                    flag = blue_cone_detect.sum
                     anti_shake = 15
+                    if flag == 1 or flag == 3:
+                        control.left_avoid()
+                    if flag == 2:
+                        control.right_avoid()
             else:
                 anti_shake -= 1
         else:
@@ -104,54 +112,18 @@ def find(img, mode, flag=0):
     return img, mode, flag
 
 
-def angle_calc(angle, mode, flag):
+def angle_calc(angle):
     """
     角度计算
     @param angle:   以舵机中值为作为0参考
-    @param mode:    find函数mode
-    @param flag:    find函数flag
     @return:
     """
     angle = angle + (MidLine.upper_x - width // 4) * 0.0005
-    if mode == 2:
-        if flag == 1:
-            angle += 5
-            time.sleep(1)
-            angle -= 5
-            time.sleep(1)
-        elif flag == 2:
-            angle -= 5
-            time.sleep(1)
-            angle += 5
-            time.sleep(1)
-    elif mode == 3:
-        if flag == 1 or flag == 3:
-            angle += 2
-            time.sleep(0.5)
-            angle -= 2
-            time.sleep(0.5)
-        elif flag == 2:
-            angle -= 2
-            time.sleep(0.5)
-            angle += 2
-            time.sleep(0.5)
-    elif mode == 4:
-        if flag == 1:
-            angle += 5
-            time.sleep(1)
-            angle -= 5
-            time.sleep(1)
-        elif flag == 2:
-            angle -= 5
-            time.sleep(1)
-            angle += 5
-            time.sleep(1)
-
     return angle
 
 
 if __name__ == '__main__':
-    cap = cv2.VideoCapture('Video/output_20240919_112114.mp4')
+    cap = cv2.VideoCapture(0)
     fps = FPS().start()
     start_time, frame_count, anti_shake, width, height = init()
     find_mode = 3
@@ -165,15 +137,21 @@ if __name__ == '__main__':
             frame_count += 1
             if not width == 640:
                 frame = cv2.resize(frame, (640, 480))
-            # lane(frame)
+            frame = undistort.undistort(frame)
+            lane(frame)
             _, find_mode, find_flag = find(frame, find_mode)
-            # angle = angle_calc(angle, find_mode, find_flag)
-            # print(f'\rDrop Rate: {MidLine.lose_count / frame_count * 100:.2f}%  '
-            #       f'error_num: {MidLine.error_num} {MidLine.upper_x - width // 4} '
-            #       f'angle: {angle}', end=' ')
+            angle = angle_calc(angle)
+            print(f'\rDrop Rate: {MidLine.lose_count / frame_count * 100:.2f}%  '
+                  f'error_num: {MidLine.error_num} {MidLine.upper_x - width // 4} '
+                  f'angle: {angle}', end=' ')
+            current_time = time.time() - start_time
+            if current_time > 5:
+                control.motor.set_speed(9)
             if find_mode == 5:
+                control.motor.set_speed(0)
+                control.pigpio_stop()
                 break
-            if cv2.waitKey(50) & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             fps.update()
     except KeyboardInterrupt:
