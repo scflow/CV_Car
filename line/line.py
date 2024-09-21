@@ -50,7 +50,6 @@ def contour_extraction(img):
 
     # 应用膨胀操作
     dilated_image = cv2.dilate(line_image, kernel1, iterations=1)
-    cv2.imshow('dilated_image', dilated_image)
     return dilated_image
 
 
@@ -69,7 +68,6 @@ def roi_mask(gray_img):
 
     # 应用掩膜
     img_mask = cv2.bitwise_and(gray_img, mask)
-    cv2.imshow('img_mask', img_mask)
     return img_mask
 
 
@@ -175,18 +173,21 @@ def show_lane(color_img, mode=0):
                 if MidLine.lose_num == 5:
                     MidLine.upper_x = mask_gray_img.shape[1] // 2
                     MidLine.lose_num = 0
-                if LeftLine.upper_x is not None:
-                    cv2.line(color_img, [int(LeftLine.upper_x), MidLine.upper_y],
-                             [int(LeftLine.lower_x), MidLine.lower_y],
-                             color=(20, 50, 200), thickness=5)
-                if RightLine.upper_x is not None:
-                    cv2.line(color_img, [int(RightLine.upper_x), MidLine.upper_y],
-                             [int(RightLine.lower_x), MidLine.lower_y],
-                             color=(127, 127, 255), thickness=5)
-                if MidLine.upper_x is not None:
-                    cv2.line(color_img, [int(MidLine.upper_x), MidLine.upper_y],
-                             [int(MidLine.lower_x), MidLine.lower_y],
-                             color=(255, 127, 127), thickness=5)
+                try:
+                    if LeftLine.upper_x is not None:
+                        cv2.line(color_img, [int(LeftLine.upper_x), MidLine.upper_y],
+                                 [int(LeftLine.lower_x), MidLine.lower_y],
+                                 color=(20, 50, 200), thickness=5)
+                    if RightLine.upper_x is not None:
+                        cv2.line(color_img, [int(RightLine.upper_x), MidLine.upper_y],
+                                 [int(RightLine.lower_x), MidLine.lower_y],
+                                 color=(127, 127, 255), thickness=5)
+                    if MidLine.upper_x is not None:
+                        cv2.line(color_img, [int(MidLine.upper_x), MidLine.upper_y],
+                                 [int(MidLine.lower_x), MidLine.lower_y],
+                                 color=(255, 127, 127), thickness=5)
+                except Exception as e:
+                    print('lose line')
             if mode == 2:
                 color_img = draw_original_lines(color_img, lines)
             return color_img

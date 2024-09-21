@@ -19,9 +19,9 @@ blue_cone = Block('blue_cone', 10, 10,
 red_cone = Block('red_cone', 10, 10,
                  np.array([10, 255, 255]), np.array([0, 100, 100]))
 # Detect 锥桶
-yellow_cone_detect = Detect(yellow_cone, 'yellow_cone_detect', 120, 20)
-blue_cone_detect = Detect(blue_cone, 'blue_cone_detect', 120, 20)
-red_cone_detect = Detect(red_cone, 'red_cone_detect', 120, 20)
+yellow_cone_detect = Detect(yellow_cone, 'yellow_cone_detect', 70, 13)
+blue_cone_detect = Detect(blue_cone, 'blue_cone_detect', 70, 13)
+red_cone_detect = Detect(red_cone, 'red_cone_detect', 70, 13)
 
 # Block 黄线
 yellow_line = Block('yellow_line', 10, 50,
@@ -40,7 +40,7 @@ red_A4_detect = Detect(red_A4, 'red_A4_detect', 120, 20)
 
 # SIFT 左转
 blue_left = Sift('blue_left')
-blue_left.detect_and_compute(gray_Red_Left)
+blue_left.detect_and_compute(gray_Blue_Left)
 # Matcher 左转
 blue_left_matcher = Matcher('blue_left_matcher')
 
@@ -86,7 +86,7 @@ def ZebraCross_find(img):
 def A4_find(img, A4=red_A4, A4_detect=red_A4_detect):
     hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv_img, A4.color_lower, A4.color_upper)
-    kernel = np.ones((40, 40), np.uint8)
+    kernel = np.ones((30, 30), np.uint8)
     dilated_image = cv2.dilate(mask, kernel, iterations=1)
     contours, _ = cv2.findContours(dilated_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     return A4_detect.find_block(contours, return_mode=2)

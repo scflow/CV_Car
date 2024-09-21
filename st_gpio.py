@@ -58,7 +58,7 @@ def find(img, mode, flag=0):
             if A4_find(roi_img):
                 anti_shake = 1
         elif anti_shake == 1:
-            roi_img = img[320:480, 200:440]
+            roi_img = img[240:480, 200:440]
             change = line_change(roi_img)
             if change == 1:
                 print(f'Left {blue_left_matcher.goodnum} {blue_right_matcher.goodnum}')
@@ -78,7 +78,6 @@ def find(img, mode, flag=0):
         if blue_cone_detect.sum < 3:
             if anti_shake == 0:
                 roi_img = img[240:480, 200:440]
-                cv2.imshow('cone_roi', roi_img)
                 cone_bool = cone_detect(roi_img, blue_cone, blue_cone_detect)
                 if cone_bool:
                     logger.info(f'{blue_cone_detect.sum} Cone Has Found')
@@ -146,7 +145,7 @@ if __name__ == '__main__':
                   f'angle: {angle}', end=' ')
             current_time = time.time() - start_time
             if current_time > 5:
-                control.motor.set_speed(9)
+                control.motor.set_speed(8)
             if find_mode == 5:
                 control.motor.set_speed(0)
                 control.pigpio_stop()
@@ -156,6 +155,7 @@ if __name__ == '__main__':
             fps.update()
     except KeyboardInterrupt:
         logger.error('Ctrl+C pressed')
+        control.pigpio_stop()
     fps.stop()
     cap.release()
     logger.info(f'Elapsed Time: {fps.elapsed():.2f}    Approx. FPS: {fps.fps():.2f}')

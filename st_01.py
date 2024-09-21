@@ -30,8 +30,7 @@ def lane(img):
     跑道检测
     """
     resize_img = cv2.resize(img, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
-    lane_img = show_lane(resize_img, 2)
-    return lane_img
+    show_lane(resize_img, 2)
 
 
 def find(img, mode, flag=0):
@@ -71,14 +70,14 @@ def find(img, mode, flag=0):
 
     # 锥桶检测
     elif mode == 3:
-        if yellow_cone_detect.sum < 3:
+        if blue_cone_detect.sum < 3:
             if anti_shake == 0:
                 roi_img = img[240:480, 200:440]
                 cv2.imshow('cone_roi', roi_img)
-                cone_bool = cone_detect(roi_img, yellow_cone, yellow_cone_detect)
+                cone_bool = cone_detect(roi_img, blue_cone, blue_cone_detect)
                 if cone_bool:
-                    logger.info(f'{yellow_cone_detect.sum} Cone Has Found')
-                    flag = yellow_cone_detect.sum
+                    logger.info(f'{blue_cone_detect.sum} Cone Has Found')
+                    flag = blue_cone_detect.sum
                     anti_shake = 15
             else:
                 anti_shake -= 1

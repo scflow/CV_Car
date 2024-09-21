@@ -1,7 +1,7 @@
 import pigpio
 import time
 import os
-import playsound
+import pygame
 
 
 class Motor:
@@ -68,50 +68,58 @@ servo.set_angle(60)
 gimbal_x = Servo('gimbal_x', 16)
 gimbal_x.set_angle(90)
 gimbal_y = Servo('gimbal_y', 23)
-gimbal_y.set_angle(90)
+gimbal_y.set_angle(98)
 time.sleep(2)
-playsound.playsound('../Audio/test.mp3')
+pygame.mixer.music.play()
+while pygame.mixer.music.get_busy():
+    pygame.time.Clock().tick(10)
+pygame.quit()
 
 
 def left_avoid():
-    servo.set_angle(47)
-    time.sleep(0.8)
     servo.set_angle(90)
-    time.sleep(1)
+    time.sleep(0.4)
     servo.set_angle(47)
-    time.sleep(1)
+    time.sleep(1.3)
+    servo.set_angle(90)
+    time.sleep(0.3)
+    servo.set_angle(64)
 
 def right_avoid():
     servo.set_angle(47)
-    time.sleep(0.8)
+    time.sleep(0.5)
     servo.set_angle(90)
-    time.sleep(1)
+    time.sleep(0.6)
     servo.set_angle(47)
-    time.sleep(1)
+    time.sleep(0.3)
+    servo.set_angle(64)
 
 def left_line_change():
-    servo.set_angle(47)
-    time.sleep(0.8)
     servo.set_angle(90)
     time.sleep(1)
     servo.set_angle(47)
-    time.sleep(1)
+    time.sleep(1.5)
+    servo.set_angle(90)
+    time.sleep(0.8)
+    servo.set_angle(64)
 
 def right_line_change():
     servo.set_angle(47)
-    time.sleep(0.8)
+    time.sleep(2)
     servo.set_angle(90)
     time.sleep(1)
     servo.set_angle(47)
     time.sleep(1)
+    servo.set_angle(64)
 
 def A_stop():
-    servo.set_angle(47)
+    servo.set_angle(90)
     time.sleep(0.8)
+    servo.set_angle(47)
+    time.sleep(1)
     servo.set_angle(90)
     time.sleep(1)
-    servo.set_angle(47)
-    time.sleep(1)
+    servo.set_angle(64)
 
 def B_stop():
     servo.set_angle(47)
@@ -120,3 +128,4 @@ def B_stop():
     time.sleep(1)
     servo.set_angle(47)
     time.sleep(1)
+    servo.set_angle(64)

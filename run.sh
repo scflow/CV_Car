@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# 设置默认Python文件名
+default_py_file="st_gpio.py"
+
+# 检查是否提供了参数
+if [ $# -eq 0 ]; then
+    echo "No file specified, running default Python file: $default_py_file"
+    filename="$default_py_file"
+else
+    filename="$1"
+fi
+
 start_time=$(date +%s.%3N)
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
@@ -16,11 +27,21 @@ echo pigpio预处理完成, 准备执行python文件
 
 sleep 1
 
+if [ ! -f "$filename" ]; then
+    echo "Error: Python file '$filename' not found."
+    exit 1
+fi
+
 echo -e "python输出\n"
 
-python3 ./st_01.py
+python3 "$filename"
 
-echo -e "\npython文件执行完毕"
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to execute Python file '$filename'."
+    exit 1
+fi
+
+echo "'$filename' executed successfully."
 
 sudo killall pigpiod
 sudo pigpiod
