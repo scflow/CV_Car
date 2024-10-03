@@ -30,7 +30,8 @@ def lane(img):
     跑道检测
     """
     resize_img = cv2.resize(img, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
-    show_lane(resize_img, 2)
+    lane_img = show_lane(resize_img, 2)
+    return lane_img
 
 
 def find(img, mode, flag=0):
@@ -45,7 +46,7 @@ def find(img, mode, flag=0):
     # 斑马新检测
     if mode == 1:
         if ZebraCross_find(img):
-            playsound('Audio/test.mp3')
+            playsound('Audio/doorbell.mp3')
             mode += 1
 
     # 变道识别
@@ -70,14 +71,14 @@ def find(img, mode, flag=0):
 
     # 锥桶检测
     elif mode == 3:
-        if blue_cone_detect.sum < 3:
+        if yellow_cone_detect.sum < 3:
             if anti_shake == 0:
                 roi_img = img[240:480, 200:440]
                 cv2.imshow('cone_roi', roi_img)
-                cone_bool = cone_detect(roi_img, blue_cone, blue_cone_detect)
+                cone_bool = cone_detect(roi_img, yellow_cone, yellow_cone_detect)
                 if cone_bool:
-                    logger.info(f'{blue_cone_detect.sum} Cone Has Found')
-                    flag = blue_cone_detect.sum
+                    logger.info(f'{yellow_cone_detect.sum} Cone Has Found')
+                    flag = yellow_cone_detect.sum
                     anti_shake = 15
             else:
                 anti_shake -= 1
@@ -153,7 +154,7 @@ if __name__ == '__main__':
     cap = cv2.VideoCapture('Video/output_20240919_112114.mp4')
     fps = FPS().start()
     start_time, frame_count, anti_shake, width, height = init()
-    find_mode = 3
+    find_mode = 1
     find_flag = 0
     angle = 0
     try:

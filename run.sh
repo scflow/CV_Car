@@ -38,10 +38,9 @@ python3 "$filename"
 
 if [ $? -ne 0 ]; then
     echo "Error: Failed to execute Python file '$filename'."
-    exit 1
+else
+    echo "'$filename' executed successfully."
 fi
-
-echo "'$filename' executed successfully."
 
 sudo killall pigpiod
 sudo pigpiod
@@ -50,13 +49,23 @@ sudo systemctl restart network-rc.service
 # 获取局域网IP地址
 LAN_IP=$(hostname -I | awk '{print$1}')
 
+# 获取局域网IPv6地址
+LAN_IP6=$(ip -6 addr show scope global | grep inet6 | awk '{print $2}' | cut -d '/' -f1 | head -n 1)
+
 # 检查是否成功获取IP地址
-if [ -z "$LAN_IP" ]; then
+if [ -z "$LAN_IP" ] && [ -z "$LAN_IP6" ]; then
   echo "无法获取局域网IP地址。"
   exit 1
 fi
 
-echo "network-rc已恢复访问: http://$LAN_IP:8001"
+# 输出访问信息
+echo "network-rc已恢复访问:"
+if [ -n "$LAN_IP" ]; then
+  echo "  - IPv4: http://$LAN_IP:8001"
+fi
+if [ -n "$LAN_IP6" ]; then
+  echo "  - IPv6: http://[$LAN_IP6]:8001"
+fi
 
 end_time=$(date +%s.%3N)
 elapsed_time=$(bc <<< "scale=3;$end_time - $start_time")
