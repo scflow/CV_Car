@@ -1,0 +1,16 @@
+DATASET:
+  NAMES: "model/coco.names"
+MODEL:
+  NC: 4
+  INPUT_WIDTH: 512
+  INPUT_HEIGHT: 512
+TRAIN:
+  LR: 0.001
+  THRESH: 0.25
+  WARMUP: true
+  BATCH_SIZE: 64
+  END_EPOCH: 350
+  MILESTIONES:
+    - 150
+    - 250
+    - 300

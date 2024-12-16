@@ -72,17 +72,12 @@ class Detect(Block):
                     if print_mode == 0:
                         print(f'{self.name} Result x: {x}, y: {y}, w: {w}, h: {h}')
 
-        if return_mode == 0:
-            return self.sum
-
-        elif return_mode == 1:
-            return self.num, self.sum
-
-        elif return_mode == 2:
-            if self.num > 0:
-                return True
-            else:
-                return False
+        return_map = {
+            0: self.sum,
+            1: (self.num, self.sum),
+            2: self.num > 0
+        }
+        return return_map.get(return_mode)
 
 
 def center(block_x, block_y, block_w, block_h):

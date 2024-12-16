@@ -97,3 +97,8 @@ Red_A = cv2.imread('Picture/Red_A.jpg')
 gray_Red_A = cv2.cvtColor(Red_A, cv2.COLOR_BGR2GRAY)
 Red_B = cv2.imread('Picture/Red_B.jpg')
 gray_Red_B = cv2.cvtColor(Red_B, cv2.COLOR_BGR2GRAY)
+
+Turn_Left = cv2.imread('Picture/Turn_Left.jpg')
+gray_Turn_Left = cv2.cvtColor(Turn_Left, cv2.COLOR_BGR2GRAY)
+Turn_Right = cv2.imread('Picture/Turn_Right.jpg')
+gray_Turn_Right = cv2.cvtColor(Turn_Right, cv2.COLOR_BGR2GRAY)

@@ -8,49 +8,80 @@ def fitler_process(img):
     equalized = cv2.equalizeHist(gray)
     gaussian = cv2.GaussianBlur(equalized, (5, 5), 3)
     adaptive_thresh = cv2.adaptiveThreshold(gaussian, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                            cv2.THRESH_BINARY, 9, 0)
+                                            cv2.THRESH_BINARY, 11, 0)
     kernel = np.ones((3, 3), np.uint8)
-    dilated_image = cv2.erode(adaptive_thresh, kernel, iterations=1)
-    return dilated_image
+    kerne2 = np.ones((5, 5), np.uint8)
+    erode_image = cv2.erode(adaptive_thresh, kernel, iterations=1)
+    # dilated_image = cv2.dilate(erode_image, kerne2, iterations=1)
+    # erode_image = cv2.erode(dilated_image, kerne2, iterations=1)
+    return erode_image
 
 
 def contour_extraction(img):
+    # contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # # 筛选轮廓
+    # lane_lines = []
+    # min_line_length = 100  # 跑道线最小长度，根据实际情况调整
+    # slope_threshold = 0.3
+    # for contour in contours:
+    #     # 计算轮廓长度
+    #     perimeter = cv2.arcLength(contour, True)
+    #     if perimeter > min_line_length:
+    #         # 计算轮廓的斜率
+    #         x, y, w, h = cv2.boundingRect(contour)
+    #         # if w == 0 or h == 0:
+    #         if h == 0:
+    #             continue  # 忽略太小或太大的轮廓
+    #         if w == 0:
+    #             if x < img.shape[1] / 2:
+    #                 slope = 99
+    #             else:
+    #                 slope = -99
+    #         else:
+    #             slope = (y - (y + h)) / (x - (x + w))
+
+    #         # 检查轮廓的斜率，以区分跑道线和噪点
+    #         if abs(slope) > slope_threshold:
+    #             lane_lines.append(contour)
+
+    # # 在空白图像上绘制轮廓
+    # line_image = np.zeros_like(img)
+    # for line in lane_lines:
+    #     cv2.drawContours(line_image, [line], 0, (255, 255, 255), 3)
     contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
     # 筛选轮廓
     lane_lines = []
-    min_line_length = 300  # 跑道线最小长度，根据实际情况调整
-    slope_threshold = 0.2
+    min_line_length = 100  # 跑道线最小长度，根据实际情况调整
+    slope_threshold = 0.3
+    
     for contour in contours:
         # 计算轮廓长度
         perimeter = cv2.arcLength(contour, True)
-        if perimeter > min_line_length:
-            # 计算轮廓的斜率
-            x, y, w, h = cv2.boundingRect(contour)
-            # if w == 0 or h == 0:
-            if h == 0:
-                continue  # 忽略太小或太大的轮廓
-            if w == 0:
-                if x < img.shape[1] / 2:
-                    slope = 99
-                else:
-                    slope = -99
-            else:
-                slope = (y - (y + h)) / (x - (x + w))
-
-            # 检查轮廓的斜率，以区分跑道线和噪点
-            if abs(slope) > slope_threshold:
-                lane_lines.append(contour)
-
+        if perimeter <= min_line_length:
+            continue
+        
+        # 计算轮廓的斜率
+        x, y, w, h = cv2.boundingRect(contour)
+        if h == 0:
+            continue  # 忽略太小或太大的轮廓
+        
+        if w == 0:
+            slope = 99 if x < img.shape[1] / 2 else -99
+        else:
+            slope = (h / w)
+        
+        # 检查轮廓的斜率，以区分跑道线和噪点
+        if abs(slope) > slope_threshold:
+            lane_lines.append(contour)
+    
     # 在空白图像上绘制轮廓
     line_image = np.zeros_like(img)
-    for line in lane_lines:
-        cv2.drawContours(line_image, [line], 0, (255, 255, 255), 3)
-
+    cv2.drawContours(line_image, lane_lines, -1, (255, 255, 255), 3)
     kernel1 = np.ones((3, 3), np.uint8)
 
     # 应用膨胀操作
     dilated_image = cv2.dilate(line_image, kernel1, iterations=1)
-    cv2.imshow('dilated_image', dilated_image)
     return dilated_image
 
 
@@ -59,7 +90,7 @@ def roi_mask(gray_img):
     height = h
     width = w
     # 定义下半部分的四边形顶点坐标
-    poly_pts = np.array([[[0, int(height * 1.00)], [0, int(height * 0.66)], [width, int(height * 0.66)], [width, int(height * 1.00)]]])
+    poly_pts = np.array([[[0, int(height * 1.00)], [0, int(height * 0.65)], [int(width * 0.2), int(height * 0.55)], [int(width * 0.8), int(height * 0.55)], [width, int(height * 0.65)], [width, int(height * 1.00)]]])
 
     # 创建一个与gray_img大小相同的零矩阵作为掩膜
     mask = np.zeros_like(gray_img)
@@ -69,7 +100,6 @@ def roi_mask(gray_img):
 
     # 应用掩膜
     img_mask = cv2.bitwise_and(gray_img, mask)
-    cv2.imshow('img_mask', img_mask)
     return img_mask
 
 
@@ -129,8 +159,8 @@ def get_lines(edge_img):
 
     height, width = edge_img.shape[:2]
     # 获取所有线段
-    lines = cv2.HoughLinesP(edge_img, 1, np.pi / 180, 15, minLineLength=50,
-                            maxLineGap=50)
+    lines = cv2.HoughLinesP(edge_img, 1, np.pi / 180, 50, minLineLength=50,
+                            maxLineGap=20)
     # 按照斜率分成车道线
     if lines is not None:
         left_lines = [line for line in lines if calculate_slope(line, width) > 0]
@@ -148,10 +178,13 @@ def get_lines(edge_img):
     return least_squares_fit(left_lines), least_squares_fit(right_lines)
 
 
-def show_lane(color_img, mode=0):
+def show_lane(color_img, mode=2):
     fitler_img = fitler_process(color_img)
+    # cv2.imshow('fitler_img', fitler_img)
     contour_img = contour_extraction(fitler_img)
+    # cv2.imshow('contour_img', contour_img)
     mask_gray_img = roi_mask(contour_img)
+    # cv2.imshow('mask_gray_img', mask_gray_img)
     # contour_img = roi_mask(fitler_img)
     # mask_gray_img = contour_extraction(contour_img)
 
@@ -165,8 +198,13 @@ def show_lane(color_img, mode=0):
             right_line, left_line = lines
             LeftLine.update(left_line)
             RightLine.update(right_line)
-            if LeftLine.upper_x is not None and RightLine.upper_x is not None and LeftLine.upper_x < RightLine.upper_x:
+            # if LeftLine.upper_x is not None and RightLine.upper_x is not None and LeftLine.upper_x < RightLine.upper_x:
+            try:
                 MidLine.update(np.array([[(LeftLine.upper_x + RightLine.upper_x) / 2, MidLine.upper_y],
+                                         [(LeftLine.lower_x + RightLine.lower_x) / 2, MidLine.lower_y]]))
+            except Exception as e:
+                print(e, 'Midline Update Failed!')
+                MidLine.update(np.array([[152, MidLine.upper_y],
                                          [(LeftLine.lower_x + RightLine.lower_x) / 2, MidLine.lower_y]]))
             else:
                 MidLine.lose_count += 1
@@ -175,20 +213,24 @@ def show_lane(color_img, mode=0):
                 if MidLine.lose_num == 5:
                     MidLine.upper_x = mask_gray_img.shape[1] // 2
                     MidLine.lose_num = 0
-                if LeftLine.upper_x is not None:
-                    cv2.line(color_img, [int(LeftLine.upper_x), MidLine.upper_y],
-                             [int(LeftLine.lower_x), MidLine.lower_y],
-                             color=(20, 50, 200), thickness=5)
-                if RightLine.upper_x is not None:
-                    cv2.line(color_img, [int(RightLine.upper_x), MidLine.upper_y],
-                             [int(RightLine.lower_x), MidLine.lower_y],
-                             color=(127, 127, 255), thickness=5)
-                if MidLine.upper_x is not None:
-                    cv2.line(color_img, [int(MidLine.upper_x), MidLine.upper_y],
-                             [int(MidLine.lower_x), MidLine.lower_y],
-                             color=(255, 127, 127), thickness=5)
-            if mode == 2:
+                try:
+                    if LeftLine.upper_x is not None:
+                        cv2.line(color_img, tuple([int(LeftLine.upper_x), MidLine.upper_y]),
+                                tuple([int(LeftLine.lower_x), MidLine.lower_y]),
+                                color=(20, 50, 200), thickness=5)
+                    if RightLine.upper_x is not None:
+                        cv2.line(color_img, tuple([int(RightLine.upper_x), MidLine.upper_y]),
+                                tuple([int(RightLine.lower_x), MidLine.lower_y]),
+                                color=(127, 127, 255), thickness=5)
+                    if MidLine.upper_x is not None:
+                        cv2.line(color_img, tuple([int(MidLine.upper_x), MidLine.upper_y]),
+                                tuple([int(MidLine.lower_x), MidLine.lower_y]),
+                                color=(255, 127, 127), thickness=5)
+                except Exception as e:
+                    print(e, 'lose line!')
+            if mode == 3:
                 color_img = draw_original_lines(color_img, lines)
+            # cv2.imshow('color_img', color_img)
             return color_img
 
 
@@ -222,6 +264,7 @@ class Line:
         self.lose_num = 0
         self.error_count = 0
         self.error_num = 0
+        self.last_upper_x = None
 
     def set_y(self, upper_y, lower_y):
         self.upper_y = upper_y
@@ -230,7 +273,7 @@ class Line:
     def set_img(self, height, width):
         self.height = height
         self.width = width
-        self.upper_y = int(self.height * 0.66)
+        self.upper_y = int(self.height * 0.6)
         self.lower_y = int(self.height - 1)
 
     def update(self, line):
@@ -247,11 +290,12 @@ class Line:
             lower_x_tmp = x_1 - (y_1 - self.lower_y) / slope_tmp
             cos_tmp = math.sqrt(1 / (slope_tmp * slope_tmp + 1))
             if self.upper_x is not None and self.slope is not None:
-                if abs(upper_x_tmp - self.upper_x) < 0.25 * self.width and abs(cos_tmp - self.cos) < 0.4:
-                    self.upper_x = 0.75 * upper_x_tmp + 0.25 * self.upper_x
-                    self.lower_x = 0.75 * lower_x_tmp + 0.25 * self.lower_x
-                    self.slope = 0.75 * slope_tmp + 0.25 * self.slope
-                    self.cos = 0.75 * cos_tmp + 0.25 * self.cos
+                if abs(upper_x_tmp - self.upper_x) < 0.3 * self.width and abs(cos_tmp - self.cos) < 0.6:
+                    self.last_upper_x = self.upper_x
+                    self.upper_x = 0.99 * upper_x_tmp + 0.01 * self.upper_x
+                    self.lower_x = 0.99 * lower_x_tmp + 0.01 * self.lower_x
+                    self.slope = 0.99 * slope_tmp + 0.01 * self.slope
+                    self.cos = 0.99 * cos_tmp + 0.01 * self.cos
                     self.error_num = 0
                 else:
                     self.error_num += 1

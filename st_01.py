@@ -154,7 +154,7 @@ if __name__ == '__main__':
     cap = cv2.VideoCapture('Video/output_20240919_112114.mp4')
     fps = FPS().start()
     start_time, frame_count, anti_shake, width, height = init()
-    find_mode = 3
+    find_mode = 1
     find_flag = 0
     angle = 0
     try:
