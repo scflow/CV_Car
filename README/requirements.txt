@@ -1,7 +1,0 @@
-dlib==19.24.6
-loguru==0.7.2
-numpy==2.0.1
-opencv_contrib_python==4.10.0.84
-opencv_python==4.10.0.84
-PyYAML==6.0.2
-playsound==1.2.2

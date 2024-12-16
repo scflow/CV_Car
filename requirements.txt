@@ -1,0 +1,11 @@
+keyboard
+loguru
+matplotlib
+numpy
+onnxruntime
+opencv_contrib_python
+opencv_python
+pigpio
+playsound
+pygame
+PyYAML

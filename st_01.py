@@ -4,7 +4,7 @@ from detect import *
 from line.line import *
 from loguru_config.config import *
 from playsound import playsound
-
+from undistort import undistort
 
 def init():
     """
@@ -17,6 +17,8 @@ def init():
     LeftLine.set_img(cap_height // lane_resize, cap_width // lane_resize)
     RightLine.set_img(cap_height // lane_resize, cap_width // lane_resize)
     MidLine.set_img(cap_height // lane_resize, cap_width // lane_resize)
+    MidLine.upper_x = 160
+    MidLine.lower_x = 160
     if not cap.isOpened():
         logger.error('Cannot open video file')
         exit()
@@ -29,7 +31,6 @@ def lane(img):
     """
     resize_img = cv2.resize(img, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
     lane_img = show_lane(resize_img, 2)
-    cv2.imshow('lane_img', lane_img)
     return lane_img
 
 
@@ -45,18 +46,17 @@ def find(img, mode, flag=0):
     # 斑马新检测
     if mode == 1:
         if ZebraCross_find(img):
-            playsound('Audio/test.mp3')
+            playsound('Audio/doorbell.mp3')
             mode += 1
 
     # 变道识别
     elif mode == 2:
         if anti_shake == 0:
-            roi_img = img[150:600, 200:700]
+            roi_img = img[240:480, 240:400]
             if A4_find(roi_img):
                 anti_shake = 1
         elif anti_shake == 1:
-            roi_img = img[400:600, 450:700]
-            cv2.imshow('roi_img', roi_img)
+            roi_img = img[320:480, 200:440]
             change = line_change(roi_img)
             if change == 1:
                 print(f'Left {blue_left_matcher.goodnum} {blue_right_matcher.goodnum}')
@@ -73,7 +73,9 @@ def find(img, mode, flag=0):
     elif mode == 3:
         if yellow_cone_detect.sum < 3:
             if anti_shake == 0:
-                cone_bool = cone_detect(img, yellow_cone, yellow_cone_detect)
+                roi_img = img[240:480, 200:440]
+                cv2.imshow('cone_roi', roi_img)
+                cone_bool = cone_detect(roi_img, yellow_cone, yellow_cone_detect)
                 if cone_bool:
                     logger.info(f'{yellow_cone_detect.sum} Cone Has Found')
                     flag = yellow_cone_detect.sum
@@ -87,7 +89,7 @@ def find(img, mode, flag=0):
     # A、B停车
     elif mode == 4:
         if anti_shake == 0:
-            roi_img = img[150:600, 200:700]
+            roi_img = img[320:480, 80:560]
             if A4_find(roi_img):
                 anti_shake = 1
         elif anti_shake == 1:
@@ -149,7 +151,7 @@ def angle_calc(angle, mode, flag):
 
 
 if __name__ == '__main__':
-    cap = cv2.VideoCapture('Video/pgv10.mp4')
+    cap = cv2.VideoCapture('Video/output_20240919_112114.mp4')
     fps = FPS().start()
     start_time, frame_count, anti_shake, width, height = init()
     find_mode = 1
@@ -161,15 +163,17 @@ if __name__ == '__main__':
             if not ret:
                 break
             frame_count += 1
-            lane(frame)
+            if not width == 640:
+                frame = cv2.resize(frame, (640, 480))
+            # lane(frame)
             _, find_mode, find_flag = find(frame, find_mode)
-            angle = angle_calc(angle, find_mode, find_flag)
-            print(f'\rDrop Rate: {MidLine.lose_count / frame_count * 100:.2f}%  '
-                  f'error_num: {MidLine.error_num} {MidLine.upper_x - width // 4} '
-                  f'angle: {angle}', end=' ')
+            # angle = angle_calc(angle, find_mode, find_flag)
+            # print(f'\rDrop Rate: {MidLine.lose_count / frame_count * 100:.2f}%  '
+            #       f'error_num: {MidLine.error_num} {MidLine.upper_x - width // 4} '
+            #       f'angle: {angle}', end=' ')
             if find_mode == 5:
                 break
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if cv2.waitKey(50) & 0xFF == ord('q'):
                 break
             fps.update()
     except KeyboardInterrupt:
